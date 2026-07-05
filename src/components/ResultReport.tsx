@@ -606,6 +606,50 @@ export const ResultReport: React.FC<ResultReportProps> = ({
                 );
               })()}
             </div>
+
+            {/* Daily Sales vs Profit Table */}
+            <div className="mt-6 pt-4 border-t border-slate-200/60 dark:border-slate-800/80">
+              <h5 className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-1.5">
+                <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
+                📊 일별 판매량에 따른 예상 순익 표
+              </h5>
+              <div className="overflow-x-auto rounded-xl border border-slate-150 dark:border-slate-800">
+                <table className="w-full text-[10px] sm:text-xs text-center text-slate-600 dark:text-slate-400">
+                  <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="py-2 px-2 font-bold">일별 판매량</th>
+                      <th className="py-2 px-2">예상 매출액</th>
+                      <th className="py-2 px-2">순마진 총액</th>
+                      <th className="py-2 px-2 border-l border-slate-200 dark:border-slate-700">최종 순수익 (광고비 차감)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                    {Array.from(new Set([
+                      1, 5, 10, 20, 30, 50, 100,
+                      ...(typeof breakEvenSalesQty === 'number' && breakEvenSalesQty > 0 ? [breakEvenSalesQty] : [])
+                    ]))
+                    .sort((a, b) => a - b)
+                    .map(qty => {
+                      const totalMargin = qty * netProfit;
+                      const finalProfit = totalMargin - dailyAdBudget;
+                      const isBEP = qty === breakEvenSalesQty;
+                      return (
+                        <tr key={qty} className={isBEP ? 'bg-blue-50/50 dark:bg-blue-950/20 font-bold' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors'}>
+                          <td className="py-2 px-2 text-slate-900 dark:text-white">
+                            {qty}개 {isBEP && <span className="text-[9px] text-blue-500 ml-1">(본전)</span>}
+                          </td>
+                          <td className="py-2 px-2">{formatWon(qty * sellingPrice)}</td>
+                          <td className="py-2 px-2 text-emerald-600 dark:text-emerald-400">+{formatWon(totalMargin)}</td>
+                          <td className={`py-2 px-2 border-l border-slate-100 dark:border-slate-800 font-bold ${finalProfit > 0 ? 'text-emerald-600 dark:text-emerald-400' : finalProfit === 0 ? 'text-slate-500' : 'text-red-500'}`}>
+                            {finalProfit > 0 ? `+${formatWon(finalProfit)}` : formatWon(finalProfit)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
 
