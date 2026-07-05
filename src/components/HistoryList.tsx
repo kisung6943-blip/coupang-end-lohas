@@ -38,14 +38,21 @@ export const HistoryList: React.FC<HistoryListProps> = ({
 
   if (records.length === 0) {
     return (
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center shadow-sm">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center shadow-sm flex flex-col items-center">
         <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center mx-auto mb-3">
           <Package className="w-5 h-5 text-blue-500" />
         </div>
         <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">등록된 상품이 없습니다</p>
-        <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto leading-relaxed">
+        <p className="text-xs text-slate-400 mt-1 mb-4 max-w-xs mx-auto leading-relaxed">
           좌측 비용 필드를 입력하고 <strong className="text-blue-500">"계산 및 상품 등록"</strong> 버튼을 누르면 상품이 안전하게 관리 목록에 추가됩니다.
         </p>
+        {onImportBackup && (
+          <label className="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl cursor-pointer transition-colors font-medium flex items-center gap-2">
+            <History className="w-4 h-4" />
+            이전 백업 데이터 불러오기 (복구)
+            <input type="file" accept=".json" className="hidden" onChange={onImportBackup} />
+          </label>
+        )}
       </div>
     );
   }
