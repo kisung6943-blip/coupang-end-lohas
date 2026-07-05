@@ -23,6 +23,8 @@ interface ResultReportProps {
   result: CalculationResult;
   onCopyText: () => void;
   onExportExcel: () => void;
+  record?: import('../types').CalculationRecord | null;
+  onUpdateMemo?: (memo: string) => void;
 }
 
 export const ResultReport: React.FC<ResultReportProps> = ({
@@ -30,6 +32,8 @@ export const ResultReport: React.FC<ResultReportProps> = ({
   result,
   onCopyText,
   onExportExcel,
+  record,
+  onUpdateMemo,
 }) => {
   const reportRef = useRef<HTMLDivElement>(null);
 
@@ -719,6 +723,24 @@ export const ResultReport: React.FC<ResultReportProps> = ({
             </li>
           </ul>
         </div>
+
+        {/* Memo Section */}
+        {record && onUpdateMemo && (
+          <div className="border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/30 rounded-2xl p-5 mt-6">
+            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+              <span className="text-lg">📝</span> 광고 운영 및 수정 메모
+            </h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              광고 예산을 변경하거나 키워드를 수정했을 때의 변경 사항과 성과를 기록해 보세요.
+            </p>
+            <textarea
+              value={record.memo || ''}
+              onChange={(e) => onUpdateMemo(e.target.value)}
+              placeholder="예: 7/5 광고예산 2만원으로 증액, 핵심키워드 단가 500원 수정"
+              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-y transition-all"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

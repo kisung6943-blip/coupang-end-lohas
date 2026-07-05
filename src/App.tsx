@@ -197,6 +197,13 @@ export default function App() {
     showToast('수정 모드가 해제되었습니다.', 'info');
   };
 
+  const handleUpdateMemo = (memo: string) => {
+    if (!activeRecord) return;
+    const updatedRecord = { ...activeRecord, memo };
+    setActiveRecord(updatedRecord);
+    setRecords(prev => prev.map(r => r.id === activeRecord.id ? updatedRecord : r));
+  };
+
   // Load a record from history
   const handleSelectRecord = (record: CalculationRecord) => {
     setInputs(record.input);
@@ -736,6 +743,8 @@ export default function App() {
                   result={activeResult}
                   onCopyText={() => handleCopyText(activeRecord)}
                   onExportExcel={() => handleExportExcel(activeRecord)}
+                  record={activeRecord}
+                  onUpdateMemo={handleUpdateMemo}
                 />
               </div>
             )}

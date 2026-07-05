@@ -40,4 +40,5 @@ export interface CalculationRecord {
   input: CalculationInput;
   result: CalculationResult;
   createdAt: string;
+  memo?: string;
 }
