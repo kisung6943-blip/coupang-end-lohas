@@ -204,6 +204,13 @@ export default function App() {
     setRecords(prev => prev.map(r => r.id === activeRecord.id ? updatedRecord : r));
   };
 
+  const handleUpdateDailySales = (dailySales: import('./types').DailySaleRecord[]) => {
+    if (!activeRecord) return;
+    const updatedRecord = { ...activeRecord, dailySales };
+    setActiveRecord(updatedRecord);
+    setRecords(prev => prev.map(r => r.id === activeRecord.id ? updatedRecord : r));
+  };
+
   // Load a record from history
   const handleSelectRecord = (record: CalculationRecord) => {
     setInputs(record.input);
@@ -745,6 +752,7 @@ export default function App() {
                   onExportExcel={() => handleExportExcel(activeRecord)}
                   record={activeRecord}
                   onUpdateMemo={handleUpdateMemo}
+                  onUpdateDailySales={handleUpdateDailySales}
                 />
               </div>
             )}

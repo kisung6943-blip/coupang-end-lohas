@@ -34,6 +34,12 @@ export interface CalculationResult {
   costBreakdown: CostBreakdown;
 }
 
+export interface DailySaleRecord {
+  id: string;
+  date: string;
+  qty: number;
+}
+
 export interface CalculationRecord {
   id: string;
   title: string;
@@ -41,4 +47,5 @@ export interface CalculationRecord {
   result: CalculationResult;
   createdAt: string;
   memo?: string;
+  dailySales?: DailySaleRecord[];
 }

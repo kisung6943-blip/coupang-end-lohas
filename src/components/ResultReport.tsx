@@ -25,6 +25,7 @@ interface ResultReportProps {
   onExportExcel: () => void;
   record?: import('../types').CalculationRecord | null;
   onUpdateMemo?: (memo: string) => void;
+  onUpdateDailySales?: (dailySales: import('../types').DailySaleRecord[]) => void;
 }
 
 export const ResultReport: React.FC<ResultReportProps> = ({
@@ -34,10 +35,32 @@ export const ResultReport: React.FC<ResultReportProps> = ({
   onExportExcel,
   record,
   onUpdateMemo,
+  onUpdateDailySales,
 }) => {
   const reportRef = useRef<HTMLDivElement>(null);
 
   const [simQty, setSimQty] = useState<number>(10);
+  const [saleDate, setSaleDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [saleQty, setSaleQty] = useState<number | ''>('');
+
+  const handleAddDailySale = () => {
+    if (saleQty === '' || saleQty < 0 || !onUpdateDailySales || !record) return;
+    
+    const newSale = {
+      id: Date.now().toString(),
+      date: saleDate,
+      qty: Number(saleQty)
+    };
+    
+    const currentSales = record.dailySales || [];
+    onUpdateDailySales([...currentSales, newSale]);
+    setSaleQty('');
+  };
+
+  const handleDeleteDailySale = (id: string) => {
+    if (!onUpdateDailySales || !record || !record.dailySales) return;
+    onUpdateDailySales(record.dailySales.filter(s => s.id !== id));
+  };
 
   // Sync simQty with breakEvenSalesQty when calculation result changes
   useEffect(() => {
@@ -607,49 +630,77 @@ export const ResultReport: React.FC<ResultReportProps> = ({
               })()}
             </div>
 
-            {/* Daily Sales vs Profit Table */}
-            <div className="mt-6 pt-4 border-t border-slate-200/60 dark:border-slate-800/80">
-              <h5 className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-1.5">
-                <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
-                📊 일별 판매량에 따른 예상 순익 표
-              </h5>
-              <div className="overflow-x-auto rounded-xl border border-slate-150 dark:border-slate-800">
-                <table className="w-full text-[10px] sm:text-xs text-center text-slate-600 dark:text-slate-400">
-                  <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
-                    <tr>
-                      <th className="py-2 px-2 font-bold">일별 판매량</th>
-                      <th className="py-2 px-2">예상 매출액</th>
-                      <th className="py-2 px-2">순마진 총액</th>
-                      <th className="py-2 px-2 border-l border-slate-200 dark:border-slate-700">최종 순수익 (광고비 차감)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
-                    {Array.from(new Set([
-                      1, 5, 10, 20, 30, 50, 100,
-                      ...(typeof breakEvenSalesQty === 'number' && breakEvenSalesQty > 0 ? [breakEvenSalesQty] : [])
-                    ]))
-                    .sort((a, b) => a - b)
-                    .map(qty => {
-                      const totalMargin = qty * netProfit;
-                      const finalProfit = totalMargin - dailyAdBudget;
-                      const isBEP = qty === breakEvenSalesQty;
-                      return (
-                        <tr key={qty} className={isBEP ? 'bg-blue-50/50 dark:bg-blue-950/20 font-bold' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors'}>
-                          <td className="py-2 px-2 text-slate-900 dark:text-white">
-                            {qty}개 {isBEP && <span className="text-[9px] text-blue-500 ml-1">(본전)</span>}
-                          </td>
-                          <td className="py-2 px-2">{formatWon(qty * sellingPrice)}</td>
-                          <td className="py-2 px-2 text-emerald-600 dark:text-emerald-400">+{formatWon(totalMargin)}</td>
-                          <td className={`py-2 px-2 border-l border-slate-100 dark:border-slate-800 font-bold ${finalProfit > 0 ? 'text-emerald-600 dark:text-emerald-400' : finalProfit === 0 ? 'text-slate-500' : 'text-red-500'}`}>
-                            {finalProfit > 0 ? `+${formatWon(finalProfit)}` : formatWon(finalProfit)}
-                          </td>
+            {/* Daily Sales Log Tracker */}
+            {record && onUpdateDailySales && (
+              <div className="mt-6 pt-4 border-t border-slate-200/60 dark:border-slate-800/80">
+                <h5 className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
+                  📅 실전 일별 판매 기록 및 수익 계산
+                </h5>
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 mb-4 flex flex-wrap items-center gap-2">
+                  <input 
+                    type="date" 
+                    value={saleDate}
+                    onChange={(e) => setSaleDate(e.target.value)}
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <input 
+                    type="number" 
+                    placeholder="판매수량"
+                    value={saleQty}
+                    onChange={(e) => setSaleQty(e.target.value === '' ? '' : Number(e.target.value))}
+                    className="w-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <span className="text-xs text-slate-600 dark:text-slate-400 font-bold">개</span>
+                  <button 
+                    onClick={handleAddDailySale}
+                    disabled={saleQty === '' || Number(saleQty) < 0}
+                    className="ml-auto bg-[#0074e9] hover:bg-[#005cb8] text-white text-xs font-bold px-4 py-2 rounded-lg disabled:opacity-50 transition-colors shadow-sm cursor-pointer"
+                  >
+                    기록 추가
+                  </button>
+                </div>
+
+                {record.dailySales && record.dailySales.length > 0 ? (
+                  <div className="overflow-x-auto rounded-xl border border-slate-150 dark:border-slate-800 max-h-64 overflow-y-auto">
+                    <table className="w-full text-xs text-center text-slate-600 dark:text-slate-400">
+                      <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 sticky top-0">
+                        <tr>
+                          <th className="py-2.5 px-3 font-bold">날짜</th>
+                          <th className="py-2.5 px-3">판매량</th>
+                          <th className="py-2.5 px-3 border-l border-slate-200 dark:border-slate-700">최종 순수익 (광고비 차감)</th>
+                          <th className="py-2.5 px-2">삭제</th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+                        {[...record.dailySales].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map(sale => {
+                          const totalMargin = sale.qty * netProfit;
+                          const finalProfit = totalMargin - dailyAdBudget;
+                          return (
+                            <tr key={sale.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                              <td className="py-2.5 px-3 text-slate-900 dark:text-white font-medium">{sale.date}</td>
+                              <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-white">{sale.qty}개</td>
+                              <td className={`py-2.5 px-3 border-l border-slate-100 dark:border-slate-800 font-bold ${finalProfit > 0 ? 'text-emerald-600 dark:text-emerald-400' : finalProfit === 0 ? 'text-slate-500' : 'text-red-500'}`}>
+                                {finalProfit > 0 ? `+${formatWon(finalProfit)}` : formatWon(finalProfit)}
+                              </td>
+                              <td className="py-2.5 px-2">
+                                <button onClick={() => handleDeleteDailySale(sale.id)} className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer" title="기록 삭제">
+                                  <XCircle className="w-4 h-4 mx-auto" />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-xs text-slate-400 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
+                    아직 기록된 일별 판매량이 없습니다.<br/>위에서 날짜와 판매량을 입력해 보세요.
+                  </div>
+                )}
               </div>
-            </div>
+            )}
           </div>
         </div>
 
