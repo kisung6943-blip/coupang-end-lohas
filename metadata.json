@@ -1,0 +1,6 @@
+{
+  "name": "쿠팡 END LOHAS 계산기",
+  "description": "쿠팡 판매자를 위한 순수익, 마진율, END ROAS 및 광고 운영 분석 계산기",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
