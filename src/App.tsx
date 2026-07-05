@@ -47,6 +47,7 @@ export default function App() {
   const [inputs, setInputs] = useState<CalculationInput>(DEFAULT_INPUTS);
   const [productTitle, setProductTitle] = useState<string>('쿠팡 상품 A');
   const [rawAdRoas, setRawAdRoas] = useState<string>(''); // For raw typing
+  const [rawPlatformFeeRate, setRawPlatformFeeRate] = useState<string>(DEFAULT_INPUTS.platformFeeRate.toString());
 
   // Validation errors
   const [errors, setErrors] = useState<{ sellingPrice?: string; productCost?: string }>({});
@@ -122,9 +123,14 @@ export default function App() {
 
   const handleFloatChange = (field: 'platformFeeRate', valueStr: string) => {
     // Allow digits and a single decimal point
-    const cleaned = valueStr.replace(/[^0-9.]/g, '');
-    const numValue = cleaned === '' ? 0 : parseFloat(cleaned);
+    const val = valueStr.replace(/[^0-9.]/g, '');
+    // Prevent multiple dots
+    const parts = val.split('.');
+    const cleaned = parts[0] + (parts.length > 1 ? '.' + parts.slice(1).join('') : '');
     
+    setRawPlatformFeeRate(cleaned);
+    
+    const numValue = cleaned === '' || cleaned === '.' ? 0 : parseFloat(cleaned);
     setInputs(prev => ({
       ...prev,
       [field]: numValue
@@ -216,6 +222,7 @@ export default function App() {
     setInputs(record.input);
     setProductTitle(record.title);
     setRawAdRoas(record.input.adRoas !== null ? record.input.adRoas.toString() : '');
+    setRawPlatformFeeRate(record.input.platformFeeRate.toString());
     setActiveResult(record.result);
     setActiveRecord(record);
     showToast(`'${record.title}' 상품 정보를 불러왔습니다. 수정이 가능합니다.`, 'info');
@@ -305,6 +312,7 @@ export default function App() {
     setInputs(DEFAULT_INPUTS);
     setProductTitle('쿠팡 상품 A');
     setRawAdRoas('');
+    setRawPlatformFeeRate(DEFAULT_INPUTS.platformFeeRate.toString());
     setActiveResult(null);
     setActiveRecord(null);
     setErrors({});
@@ -625,7 +633,7 @@ export default function App() {
                     <div className="relative">
                       <input
                         type="text"
-                        value={inputs.platformFeeRate}
+                        value={rawPlatformFeeRate}
                         onChange={(e) => handleFloatChange('platformFeeRate', e.target.value)}
                         className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-3.5 pr-8 py-2.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-semibold"
                       />
