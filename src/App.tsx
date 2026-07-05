@@ -228,6 +228,46 @@ export default function App() {
     }
   };
 
+  // Backup all records to JSON
+  const handleExportBackup = () => {
+    if (records.length === 0) {
+      showToast('백업할 데이터가 없습니다.', 'info');
+      return;
+    }
+    const dataStr = JSON.stringify(records, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `lohas_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    showToast('전체 데이터 백업이 완료되었습니다.');
+  };
+
+  // Import records from JSON
+  const handleImportBackup = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const importedData = JSON.parse(e.target?.result as string);
+        if (Array.isArray(importedData)) {
+          setRecords(importedData);
+          showToast('데이터가 성공적으로 복구되었습니다.');
+        } else {
+          showToast('잘못된 백업 파일입니다.', 'info');
+        }
+      } catch (err) {
+        showToast('파일을 읽는 중 오류가 발생했습니다.', 'info');
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+  };
+
   // Comparison toggle
   const handleToggleCompare = (id: string) => {
     setSelectedForComparison(prev => {
@@ -663,6 +703,8 @@ export default function App() {
                 onStartComparison={handleStartComparison}
                 onAddNew={handleResetForm}
                 activeId={activeRecord?.id}
+                onExportBackup={handleExportBackup}
+                onImportBackup={handleImportBackup}
               />
             </div>
           </section>

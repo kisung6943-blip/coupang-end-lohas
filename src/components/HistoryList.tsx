@@ -13,6 +13,8 @@ interface HistoryListProps {
   onStartComparison: () => void;
   onAddNew?: () => void;
   activeId?: string;
+  onExportBackup?: () => void;
+  onImportBackup?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const HistoryList: React.FC<HistoryListProps> = ({
@@ -25,6 +27,8 @@ export const HistoryList: React.FC<HistoryListProps> = ({
   onStartComparison,
   onAddNew,
   activeId,
+  onExportBackup,
+  onImportBackup,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -53,12 +57,28 @@ export const HistoryList: React.FC<HistoryListProps> = ({
           <Package className="w-4 h-4 text-blue-500" />
           📦 등록 상품 목록 ({records.length}개)
         </h4>
-        <button
-          onClick={onClearAll}
-          className="text-xs text-red-500 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors cursor-pointer"
-        >
-          전체 삭제
-        </button>
+        <div className="flex items-center gap-2">
+          {onImportBackup && (
+            <label className="text-[11px] bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-1 rounded cursor-pointer transition-colors">
+              복구
+              <input type="file" accept=".json" className="hidden" onChange={onImportBackup} />
+            </label>
+          )}
+          {onExportBackup && (
+            <button
+              onClick={onExportBackup}
+              className="text-[11px] bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-2 py-1 rounded cursor-pointer transition-colors"
+            >
+              백업
+            </button>
+          )}
+          <button
+            onClick={onClearAll}
+            className="text-xs text-red-500 hover:text-red-600 dark:hover:text-red-400 font-medium transition-colors cursor-pointer ml-1"
+          >
+            전체 삭제
+          </button>
+        </div>
       </div>
 
       <div className="p-4 space-y-3">
